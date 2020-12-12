@@ -3,7 +3,7 @@ import json
 
 auth_data = {
     "grant_type"    : "client_credentials",
-    "client_id"     : "YOUR_CLIENT_ID",
+    "client_id"     : "nikicollette",
     "client_secret" : "YOUR_CLIENT_SECRET",
     "scope"         : "read_product_data"
 }
