@@ -89,8 +89,8 @@ if (gsid_options != [] ):
         def financialReturnandGrowthScore():
           #Allow users to input list of company id and the date
           #Weight values
-          financialReturnWeight = st.number_input("Enter the weight for financialScore (0 -100)", 0, 100,0, 1)
-          growthWeight  = st.number_input("Enter the weight for growthScore (0 -100)",  0, 100, 0, 1)
+          financialReturnWeight = st.number_input("Enter the weight for financialScore (0 -100)", 0, 100,50, 1)
+          growthWeight  = st.number_input("Enter the weight for growthScore (0 -100)",  0, 100, 50, 1)
           companies = []
           companyID = gsid_options
           date = compare_date.strftime("%Y-%m-%d")
