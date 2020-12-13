@@ -4,9 +4,10 @@ import pandas as pd
 import streamlit as st
 import datetime
 import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
 
 st.title("Samuel")
-st.markdown("US Securities Dashboard")
+st.markdown("US Securities Comparison Dashboard")
 
 gsid_options = st.multiselect('Select the companies that you  would like to compare (gsid)', ['10516', '10696', '11308', '11896', '13901', '13936', '14593', '148401', '149756', '150407', '15579', '173578', '12490', '176665', '177256', '17750', '85072', '183269', '183414', '151048', '18729', '188329', '188804', '193155', '193324', '198025', '152963', '161467', '213305', '216587', '216722', '217708', '22293', '222946', '223416', '16432', '16600', '227284', '230958', '25022', '26403', '26825', '29209', '172890', '18163', '46886', '40539', '44644', '46578', '46922', '49154', '53065', '53613','55976','59010','59248','61621','64064','66384','69796','70500','75100','75154','75573','75607','76226','76605','193067','77659','78045','78975','79145','79265','79758','80286','80791','81116','82598','194688','84275','197235','84769','905255','85517','85627','85631','85914','86196','86356','86372','202271','901237','226278','902608','902704','903917','905288','905632','91556', '16678'])
 
@@ -26,7 +27,7 @@ session = requests.Session()
 
 auth_request = session.post("https://idfs.gs.com/as/token.oauth2", data = auth_data)
 access_token_dict = json.loads(auth_request.text)
-access_token = "0012NkJpYOmEGZmibnTl8qH6ubI4"
+access_token = "0012FXYpt0CqAe2qT9qGuAm5JxHH"
 
 # update session headers with access token
 session.headers.update({"Authorization":"Bearer "+ access_token})
@@ -37,13 +38,12 @@ request_url = "https://api.marquee.gs.com/v1/data/USCANFPP_MINI/query"
 start_date = start_date_datetime.strftime("%Y-%m-%d")
 end_date = end_date_datetime.strftime("%Y-%m-%d")
 
-if (gsid_options != [] ):
+if (gsid_options != []):
     if ("all" in gsid_options):
         request_query = {
                         "startDate": start_date,
                         "endDate": end_date
         }
-
     else:
         request_query = {
                             "where": {
@@ -56,14 +56,15 @@ if (gsid_options != [] ):
     results = json.loads(request.text)
     results = json.loads(request.text)
     results = pd.DataFrame(results)
-    results["date"] = results["data"]
-    results["gsid"] = results["data"]
-    results["financialReturnsScore"] = results["data"]
-    results["growthScore"] = results["data"]
-    results["multipleScore"] = results["data"]
-    results["integratedScore"] = results["data"]
-    results["updateTime"] = results["data"]
+    results["date"] = results['data']
+    results["gsid"] = results['data']
+    results["financialReturnsScore"] = results['data']
+    results["growthScore"] = results['data']
+    results["multipleScore"] = results['data']
+    results["integratedScore"] = results['data']
+    results["updateTime"] = results['data']
     counter = 0
+
     for result in results["data"]:
         results["date"][counter] = result.get('date')
         results["gsid"][counter] = result.get('gsid')
@@ -76,11 +77,94 @@ if (gsid_options != [] ):
 
     results = results.drop('data', 1)
 
-    #add here - sneha
-    st.write("graphs")
+
+    def temp(gsid):
+        fig, ax = plt.subplots(1,1)
+        datetemp = results[results["gsid"] == gsid[0]]
+
+        for val in gsid:
+            temp = results[results["gsid"] == val]
+            if (len(temp) != len(datetemp)):
+                while (len(temp) > len(datetemp)):
+                    temp.drop(temp.tail(1).index, inplace = True)
+                while (len(datetemp) > len(temp)):
+                    datetemp.drop(datetemp.tail(1).index, inplace = True)
+
+            ax.plot(datetemp["date"], temp["financialReturnsScore"])
+    
+        loc = plticker.MultipleLocator(base=(len(datetemp))/4) # this locator puts ticks at regular intervals
+        ax.xaxis.set_major_locator(loc)
+        ax.legend(gsid)
+        ax.set_ylabel("score")
+        ax.set_xlabel("date")
+        ax.set_title("Financial Returns Score")
+        st.pyplot(fig)
+
+        fig, ax = plt.subplots(1,1)
+        datetemp = results[results["gsid"] == gsid[0]]
+        for val in gsid:
+            temp = results[results["gsid"] == val]
+            if (len(temp) != len(datetemp)):
+                while (len(temp) > len(datetemp)):
+                    temp.drop(temp.tail(1).index, inplace = True)
+                while (len(datetemp) > len(temp)):
+                    datetemp.drop(datetemp.tail(1).index, inplace = True)
+
+            ax.plot(datetemp["date"], temp["growthScore"])
+
+        loc = plticker.MultipleLocator(base=len(datetemp)/4) # this locator puts ticks at regular intervals
+        ax.xaxis.set_major_locator(loc)
+        ax.legend(gsid)
+        ax.set_ylabel("score")
+        ax.set_xlabel("date")
+        ax.set_title("Growth Score")
+        st.pyplot(fig)
+
+        fig, ax = plt.subplots(1,1)
+        datetemp = results[results["gsid"] == gsid[0]]
+        for val in gsid:
+            temp = results[results["gsid"] == val]
+            if (len(temp) != len(datetemp)):
+                while (len(temp) > len(datetemp)):
+                    temp.drop(temp.tail(1).index, inplace = True)
+                while (len(datetemp) > len(temp)):
+                    datetemp.drop(datetemp.tail(1).index, inplace = True)
+
+            ax.plot(datetemp["date"], temp["multipleScore"])
+
+        loc = plticker.MultipleLocator(base=len(datetemp)/4) # this locator puts ticks at regular intervals
+        ax.xaxis.set_major_locator(loc)
+        ax.legend(gsid)
+        ax.set_ylabel("score")
+        ax.set_xlabel("date")
+        ax.set_title("Multiple Score")
+        st.pyplot(fig)
+
+
+        fig, ax = plt.subplots(1,1)
+        datetemp = results[results["gsid"] == gsid[0]]
+        for val in gsid:
+            temp = results[results["gsid"] == val]
+            if (len(temp) != len(datetemp)):
+                while (len(temp) > len(datetemp)):
+                    temp.drop(temp.tail(1).index, inplace = True)
+                while (len(datetemp) > len(temp)):
+                    datetemp.drop(datetemp.tail(1).index, inplace = True)
+
+            ax.plot(datetemp["date"], temp["integratedScore"])
+
+        loc = plticker.MultipleLocator(base=len(datetemp)/4) # this locator puts ticks at regular intervals
+        ax.xaxis.set_major_locator(loc)
+        ax.legend(gsid)
+        ax.set_ylabel("score")
+        ax.set_xlabel("date")
+        ax.set_title("Integrated Score")
+        st.pyplot(fig)
+
+    temp(gsid_options)
 
     st.markdown("Select a date between your start date and end date to analyze")
-    compare_date = st.date_input('date', start_date_datetime)
+    compare_date = st.date_input('date', datetime.date(2015,6,30))
     if (compare_date > end_date_datetime or compare_date < start_date_datetime) :
         st.write("Please enter a date that is between your start date and end date")
     else :
@@ -97,11 +181,11 @@ if (gsid_options != [] ):
           for i in range(len(gsid_options)):
               temp = results.loc[results["gsid"] == gsid_options[i]]
               temp = temp.loc[temp["date"] == date]
-              if (temp is None):
+              if (temp.empty):
                   st.write("the date doesn't work")
               else:
                   value1 = temp['financialReturnsScore'].iloc[0]
-                  value2 = temp['financialReturnsScore'].iloc[0]
+                  value2 = temp['growthScore'].iloc[0]
                   companyID[i]= {
                       "name": gsid_options[i],
                       "Date": compare_date,
@@ -154,6 +238,8 @@ if (gsid_options != [] ):
           st.pyplot(fig)
 
         finalResult = visualize()
+
+
 
 
     # results = pd.DataFrame(results)
